@@ -1,0 +1,98 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Word Guess Game
+{% endblock %}
+
+{% block main %}
+    <div class="container py-5 text-center">
+        <form action="/" method="post">
+            <div class="container py-1 text-center">
+                <label><b>Optional</b></label>
+                <input class="wordlength" name="word_length" placeholder="Word Length" type="number" min="3" max="9">
+            </div>
+            <div class="container py-1 text-center">
+                <button class="btn btn-primary" type="submit">Generate a random word</button>
+            </div>
+        </form>
+        <div class="container py-3 text-center">Or</div>
+        <form action="/from_list" method="post">
+            <div class="container py-3 text-center">
+                <button class="btn btn-primary" type="submit">Pull from my word list</button>
+            </div>
+        </form>
+    </div>
+    <div class="container py-1 text-center">
+        <label class="guess"></lable>
+    </div>
+    <div class="container py-3 text-center flag"></div>
+    <div class="grid-container py-5 text-center">
+        <div class="left definition"></div>
+        <div class="right save"></div>
+    </div>
+
+    <div class="flexbox-container container" id="letter-list">
+        {% for letter in 'abcdefghijklmnopqrstuvwxyz' %}
+            <button class="flexbox-item">{{ letter | upper }}</button>
+        {% endfor %}
+    </div>
+    {% if word %}
+    <script>
+        // Define named function to use as event listener
+        function handleButtonClick(event) {
+            let button = event.target;
+            let indices = [];
+            let char = button.innerHTML.toLowerCase();
+            let index = guessWord.indexOf(char);
+            while (index !== -1) {
+                indices.push(index);
+                index = guessWord.indexOf(char, index + 1);
+            }
+            if (indices.length > 0) {
+                button.classList.toggle("highlight-blue");
+            } else {
+                button.classList.toggle("highlight-red");
+                count++;
+            }
+            for (index of indices) {
+                guessingArray[index * 2] = guessWordArray[index];
+            }
+            guessing = guessingArray.join("");
+            document.querySelector(".guess").innerHTML = guessing;
+            // Remove event listener by passing the same function reference
+            button.removeEventListener("click", handleButtonClick);
+            // '_' not in the array indicates the user won the game
+            if (!guessingArray.includes("_")) {
+                document.querySelector(".flag").innerHTML = "You Got It!";
+            } else {
+                document.querySelector(".flag").innerHTML = "You have " + (8 - count) + " tries!";
+            }
+            if (count === 8) {
+                document.querySelector(".flag").innerHTML = "The word was " + `<b>${guessWord}</b>`;
+                // Remove event listener from all buttons
+                for (let j = 0; j < elements.length; j++) {
+                    elements[j].removeEventListener("click", handleButtonClick);
+                }
+                let url = `https://duckduckgo.com/?q=${guessWord}&ia=definition`;
+                document.querySelector(".definition").innerHTML = `<a href=${url}>Definition</a>`;
+                document.querySelector(".save").innerHTML = `<form action="add" method="post"><button class="btn btn-primary" type="submit" name="submit" value="${guessWord}">Add to MyWordList</button>`;
+            }
+        }
+
+        let length = {{ word | length }};
+        let guessWord = '{{ word }}';
+        let guessWordArray = guessWord.split("");
+        // insert an empty space to seperate the letter
+        let guessing = "_ ".repeat(length);
+        let guessingArray = guessing.split("");
+        document.querySelector(".guess").innerHTML = guessing;
+
+        let elements = document.getElementsByClassName("flexbox-item");
+        let count = 0;
+        document.querySelector(".flag").innerHTML = "You have " + (8 - count) + " tries!";
+        for (let i = 0; i < elements.length; i++) {
+            elements[i].addEventListener("click", handleButtonClick);
+        }
+    </script>
+{% endif %}
+{% endblock %}

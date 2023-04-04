@@ -1,0 +1,13 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Log In
+{% endblock %}
+
+{% block main %}
+    <div class="mb-3">
+        {% if message %}
+            {{ message }}
+        {% endif %}
+    </div>
+{% endblock %}

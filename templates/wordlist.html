@@ -1,0 +1,68 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Word List
+{% endblock %}
+
+{% block main %}
+    <div class="container py-3 text-center">
+        <form action="add" method="post">
+            <input autocomplete="off" autofocus name="submit" id='submit' placeholder="Enter new word" type="text">
+            <button class="btn btn-primary" type="submit">Add to my word list</button>
+            <!-- javascript to prevent user entering a number -->
+            <script>
+                const myInput = document.getElementById("submit");
+                myInput.addEventListener("input", function() {
+                    const regex = /[^a-zA-Z]/gi;
+                    this.value = this.value.replace(regex,"");
+                })
+            </script>
+        </form>
+    </div>
+    {% if word_list %}
+        <div class="container py-5 text-center"><h1>Your saved words</h1></div>
+        <div class="container"><hr></div>
+        <table class="table table-striped container py-5 text-center">
+            <tbody>
+                {% for object in word_list %}
+                    <tr>
+                        <td class="word" style="vertical-align: middle">{{ object.word }}</td>
+                        <td style="vertical-align: middle"><a href='https://duckduckgo.com/?q={{ object.word }}&ia=definition'>Full Definition</a></td>
+                        <td><form action="remove" method="post"><button class="btn btn-primary" type="submit" name="word" value="{{ object.word }}">Remove</a></form></td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="container py-1 text-center" id="definition"></div>
+        <script>
+            let myWords = document.getElementsByClassName("word");
+            let definition = document.getElementById("definition");
+            for (let i = 0; i < myWords.length; i++) {
+                let timer;
+                myWords[i].addEventListener("mouseover", function() {
+                    timer = setTimeout(function() {
+                        let myWord = myWords[i].innerHTML;
+                        let myDiv = document.getElementById("definition");
+                        fetch("https://api.dictionaryapi.dev/api/v2/entries/en/" + myWord)
+                            .then(response => response.json())
+                            .then(data => {
+                                let definition = data[0].meanings[0].definitions[0].definition;
+                                myDiv.innerHTML = `Definition of <b>${myWord}</b> : ` + definition;
+                            })
+                            .catch(error => {
+                                console.error(error);
+                                myDiv.innerHTML = "Error fetching definition. Please click Full Definition to find out!";
+                            });
+                    }, 500);
+                });
+                myWords[i].addEventListener("mouseout", function() {
+                    clearTimeout(timer);
+                });
+            }
+        </script>
+    {% else %}
+        <div class="container py-1 text-center">You don't have any saved words.</div>
+    {% endif %}
+
+{% endblock %}
+

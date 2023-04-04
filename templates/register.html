@@ -1,0 +1,46 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Register
+{% endblock %}
+
+{% block main %}
+    <form action="/register" method="post">
+        <div class="mb-3">
+            <input autocomplete="off" autofocus class="form-control mx-auto w-auto" id="register-name" name="username" placeholder="Username" type="text">
+            <script>
+                let name = document.getElementById('register-name');
+                name.addEventListener('input', async function() {
+                  if (name.value === '') {
+                    document.querySelector('#validation').innerHTML = '&#10060;';
+                  } else {
+                    let response = await fetch('/check?user=' + name.value);
+                    let flag = await response.text();
+                    // document.querySelector('#register-name').innerHTML = flag;
+                      name.style.borderColor = flag;
+                    }
+                  })
+              </script>
+        </div>
+        <div class="mb-3">
+            <input class="form-control mx-auto w-auto" id="register-password" name="password" placeholder="Password" type="password">
+        </div>
+        <div class="mb-3">
+            <input class="form-control mx-auto w-auto" id="confirmation" name="confirmation" placeholder="Repeat Password" type="password">
+        </div>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+               document.querySelector('#confirmation').addEventListener('keyup', function() {
+                 let char = document.querySelector('#confirmation').value;
+                 let password = document.querySelector('#register-password').value;
+                 if (char === password) {
+                   document.getElementById('confirmation').style.borderColor = 'green';
+                 } else {
+                   document.getElementById('confirmation').style.borderColor = 'red';
+                 }
+               });
+            });
+        </script>
+        <button class="btn btn-primary" type="submit">Register</button>
+    </form>
+{% endblock %}
